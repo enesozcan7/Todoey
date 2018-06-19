@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class TodoListViewController: UITableViewController{
+class TodoListViewController: SwipeCellViewController{
     
     let realm = try! Realm()
     var toDoItems : Results<Item>?
@@ -22,6 +22,8 @@ class TodoListViewController: UITableViewController{
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.rowHeight = 80.0
+        
         // Do any additional setup after loading the view, typically from a nib.
         
     }
@@ -32,7 +34,7 @@ class TodoListViewController: UITableViewController{
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         let item = toDoItems?[indexPath.row]
         cell.textLabel?.text = item?.title ?? "no item is written"
@@ -109,6 +111,18 @@ class TodoListViewController: UITableViewController{
         toDoItems = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
         tableView.reloadData()
         
+    }
+    
+    override func updateModel(at indexPath: IndexPath) {
+        if let itemToDelete = self.toDoItems?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(itemToDelete)
+                }
+            } catch {
+                print("error when saving items : \(error)")
+            }
+        }
     }
     
 }
